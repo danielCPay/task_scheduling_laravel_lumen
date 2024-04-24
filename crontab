@@ -1,0 +1,2 @@
+* * * * * * cd /var/www/html && artisan shedule:work >> /dev/null 2>&1
+#Empty Line
