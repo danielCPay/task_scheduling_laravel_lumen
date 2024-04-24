@@ -26,7 +26,7 @@ steps:
     inputs:
       repository: 'danielesco/task_scheduling_laravel_lumen'
       command: 'build'
-      Dockerfile: 'Dockerfile'  # Ensure the correct Dockerfile path
+      Dockerfile: 'docker-compose.yml'  # Ensure the correct Dockerfile path
       tags: 'v1'
       displayName: 'Docker Build'
 
