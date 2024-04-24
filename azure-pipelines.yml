@@ -1,119 +1,52 @@
-trigger:
-  branches:
-    include:
-      - main
-      - main-production
-      - qa-branch
-
-variables:
-  - name: appName
-    value: ''
-  - ${{ if eq(variables['Build.SourceBranchName'], 'main') }}:
-      - group: PMC-variables-development
-  - ${{ if eq(variables['Build.SourceBranchName'], 'main-production') }}:
-      - group: PMC-variables-production
-  - ${{ if eq(variables['Build.SourceBranchName'], 'qa-branch') }}:
-      - group: PMC-variables-qa
-  
-pool:
-  name: $(poolAgent)
-  
-steps:
-- task: Docker@2
-  inputs:
-    command: 'login'
-    containerRegistry: '$(acrServiceConnection)'
-    displayName: 'ACR Login'
-
-# - script: |
-#     docker pull '$(dockerImage):$(tag)'
-#   displayName: 'Docker Pull'
-
-- task: Docker@2
-  inputs:
-    repository: '$(repository)'
-    command: 'build'
-    Dockerfile: 'Dockerfile'  # Asegúrate de tener un Dockerfile en la ubicación correcta
-    tags: '$(tag)'
-    displayName: 'Docker Build'
-
-
-- task: Docker@2
-  inputs:
-    repository: '$(repository)'
-    command: 'push'
-    tags: '$(tag)'
-    displayName: 'Docker Push'
-
-- task: AzureCLI@2
-  inputs:
-    azureSubscription: '$(appServiceConnection)'
-    scriptType: 'bash'
-    scriptLocation: 'inlineScript'
-    inlineScript: |
-      appName=""
-      if [ $(Build.SourceBranchName) == "main" ]; then
-        appName="CMPDEV-APS-APC001"
-      elif [ $(Build.SourceBranchName) == 'main-production' ]; then
-        appName='CMPPRD-APS-APC001'
-      elif [ $(Build.SourceBranchName) == 'qa-branch' ]; then
-        appName='CMPDEV-APS-APC001'
-      fi
-      az webapp config container set --name $appName --resource-group '$(resourceGroup)' --docker-custom-image-name '$(dockerImage):$(tag)' --docker-registry-server-url 'https://$(acrUser).azurecr.io' --docker-registry-server-user '$(acrUser)' --docker-registry-server-password '$(acrPassword)'
-      az webapp restart --name $appName --resource-group '$(resourceGroup)'
-
-  displayName: 'Azure Web App Container Deploy'
-  
-
 ############### Docker Hub ##################  
-# trigger:
-# - main
-# - main-production
+trigger:
+- main
+- main-production
 
-# pool:
-#   name: 'Windows pool DEV' 
-#   # vmImage: ubuntu-latest
+pool:
+  name: 'Windows pool DEV' 
+  # vmImage: ubuntu-latest
 
-# steps:
-#   # - task: ShellScript@2
-#   #   displayName: Install DockerInstaller@0
-#   #   inputs:
-#   #     scriptPath: 'docker-compose-install.sh'
-#   - task: Docker@2
-#     inputs:
-#       command: 'login'
-#       containerRegistry: 'nsconnectionapistoextractfrompmc'
-#       displayName: 'Docker Login'
+steps:
+  # - task: ShellScript@2
+  #   displayName: Install DockerInstaller@0
+  #   inputs:
+  #     scriptPath: 'docker-compose-install.sh'
+  - task: Docker@2
+    inputs:
+      command: 'login'
+      containerRegistry: 'nsconnectiontaskschedulinglaravellumen'
+      displayName: 'Docker Login'
 
-#   # - script: |
-#   #     docker pull danielesco/apistoextractfrompmc:v3
-#   #   displayName: 'Docker Pull v3'
+  # - script: |
+  #     docker pull danielesco/apistoextractfrompmc:v1
+  #   displayName: 'Docker Pull v1'
 
-#   - task: Docker@2
-#     inputs:
-#       repository: 'danielesco/apistoextractfrompmcpro'
-#       command: 'build'
-#       Dockerfile: 'Dockerfile'  # Ensure the correct Dockerfile path
-#       tags: 'v3'
-#       displayName: 'Docker Build'
+  - task: Docker@2
+    inputs:
+      repository: 'danielesco/task_scheduling_laravel_lumen'
+      command: 'build'
+      Dockerfile: 'Dockerfile'  # Ensure the correct Dockerfile path
+      tags: 'v1'
+      displayName: 'Docker Build'
 
-#   - task: Docker@2
-#     inputs:
-#       repository: 'danielesco/apistoextractfrompmcpro'
-#       command: 'push'
-#       tags: 'v3'
-#       displayName: 'Docker Push'
+  - task: Docker@2
+    inputs:
+      repository: 'danielesco/task_scheduling_laravel_lumen'
+      command: 'push'
+      tags: 'v1'
+      displayName: 'Docker Push'
 
 
-#   - task: AzureCLI@2
-#     inputs:
-#       azureSubscription: 'appServicesConnectionPrd'
-#       scriptType: 'bash'
-#       scriptLocation: 'inlineScript'
-#       inlineScript: |
-#         az webapp config container set --name 'CMPPRD-APS-APC001' --resource-group 'CMPRG1PRD-RG-APICASES001' --docker-custom-image-name 'danielesco/apistoextractfrompmcpro:v3' --docker-registry-server-url 'https://index.docker.io/v1/'
-#         az webapp restart --name 'CMPPRD-APS-APC001' --resource-group 'CMPRG1PRD-RG-APICASES001'
-#     displayName: 'Azure Web App Container Deploy'
+  - task: AzureCLI@2
+    inputs:
+      azureSubscription: 'appServicesConnection'
+      scriptType: 'bash'
+      scriptLocation: 'inlineScript'
+      inlineScript: |
+        az webapp config container set --name 'CMPDEV-LAP-APC003' --resource-group 'CMPRG1DEV-RG-APICASES001' --docker-custom-image-name 'danielesco/task_scheduling_laravel_lumen:v1' --docker-registry-server-url 'https://index.docker.io/v1/'
+        az webapp restart --name 'CMPDEV-LAP-APC003' --resource-group 'CMPRG1DEV-RG-APICASES001'
+    displayName: 'Azure Web App Container Deploy'
 
 
   
